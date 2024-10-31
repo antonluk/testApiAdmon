@@ -1,0 +1,510 @@
+openapi: 3.0.0
+info:
+  title: Admon test case
+  version: 1.0.0
+  description: API для управления задачами
+servers:
+  - url: http://localhost:3000/api
+tags:
+  - name: Tasks
+    description: Управление задачами
+  - name: Users
+    description: Управление пользователями
+  - name: Categories
+    description: Управление категориями задач  
+paths:
+  /tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Получить все задачи
+      description: Возвращает список задач
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+          required: false
+          description: Статус задачи
+        - in: query
+          name: appends
+          schema:
+            type: array
+            items:
+              type: string
+              description: Реляция
+              enum:
+                - responsible
+                - category
+          required: false
+          description: Подключение реляций
+        - in: query
+          name: limit
+          schema:
+            $ref: '#/components/schemas/Limit'
+          required: false
+        - in: query
+          name: offset
+          schema:
+            $ref: '#/components/schemas/Offset'
+          required: false 
+      responses:
+        200:
+          description: Список задач
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+    post:
+      tags:
+        - Tasks
+      summary: Создать новую задачу
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskBody'
+      responses:
+        201:
+          description: Задача успешно создана
+
+  /tasks/{id}:
+    get:
+      tags:
+        - Tasks
+      summary: Получить задачу по её ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: number
+          required: true
+          description: ID задачи
+      responses:
+        200:
+          description: Задача
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskWitRelations'
+    put:
+      tags:
+        - Tasks
+      summary: Обновить задачу по ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: number
+          required: true
+          description: ID задачи
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskBody'
+      responses:
+        200:
+          description: Задача успешно обновлена
+    delete:
+      tags:
+        - Tasks
+      summary: Удалить задачу по ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: number
+          required: true
+          description: ID задачи
+      responses:
+        200:
+          description: Задача успешно удалена
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Получить всех пользователей
+      description: Возвращает список всех пользователей
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            $ref: '#/components/schemas/Limit'
+          required: false
+        - in: query
+          name: offset
+          schema:
+            $ref: '#/components/schemas/Offset'
+          required: false 
+      responses:
+        200:
+          description: Список пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    username:
+                      type: string
+                    email:
+                      type: string
+                    status:
+                      type: string
+                      enum:
+                        - ACTIVE
+                        - INACTIVE
+    post:
+      tags:
+        - Users
+      summary: Создать нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - ACTIVE
+                    - INACTIVE
+      responses:
+        201:
+          description: Пользователь успешно создан
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Получить пользователя по его ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: number
+          required: true
+          description: ID пользователя
+      responses:
+        200:
+          description: Найденный пользователь
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  status:
+                    type: string
+                  tasks:
+                    type: array
+                    description: Список задач, связанных с пользователем
+                    items:
+                      $ref: '#/components/schemas/Task'
+    put:
+      tags:
+        - Users
+      summary: Обновить пользователя по ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: number
+          required: true
+          description: ID пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - ACTIVE
+                    - INACTIVE
+      responses:
+        200:
+          description: Пользователь успешно обновлен
+    delete:
+      tags:
+        - Users
+      summary: Удалить пользователя по ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: number
+          required: true
+          description: ID пользователя
+      responses:
+        200:
+          description: Пользователь успешно удален
+
+  /categories:
+    get:
+      summary: Получить все категории
+      tags:
+        - Categories
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            $ref: '#/components/schemas/Limit'
+          required: false
+        - in: query
+          name: offset
+          schema:
+            $ref: '#/components/schemas/Offset'
+          required: false  
+      responses:
+        200:
+          description: Список всех категорий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+    post:
+      summary: Создать новую категорию
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCategory'
+      responses:
+        201:
+          description: Категория успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+  /categories/{id}:
+    get:
+      summary: Получить категорию по ID
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Информация о категории
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryWithTasks'
+        '404':
+          description: Категория не найдена
+    put:
+      summary: Обновить категорию по ID
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCategory'
+      responses:
+        200:
+          description: Категория успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+    delete:
+      summary: Удалить категорию по ID
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Категория успешно удалена   
+
+components:
+  schemas:
+    TaskStatus:
+      description: Статус задачи
+      type: string
+      enum:
+        - PENDING
+        - IN_PROGRESS
+        - COMPLETED
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: number
+          description: ID задачи
+        title:
+          description: Заголовок задачи
+          type: string
+        description:
+          description: Описание задачи
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        responsibleId:
+          description: ID ответственного
+          type: number
+          nullable: true
+          minimum: 1
+        categoryId:
+          description: ID категории
+          type: number
+          nullable: true
+          minimum: 1  
+
+    TaskWitRelations:
+      type: object
+      properties:
+        id:
+          type: number
+          description: ID задачи
+        title:
+          description: Заголовок задачи
+          type: string
+        description:
+          description: Описание задачи
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        responsibleId:
+          description: ID ответственного
+          type: number
+          nullable: true
+          minimum: 1  
+        categoryId:
+          description: ID категории
+          type: number
+          nullable: true
+          minimum: 1  
+        responsible:
+          $ref: '#/components/schemas/User'
+        category:
+          $ref: '#/components/schemas/Category'          
+
+    TaskBody:
+      type: object
+      properties:
+        title:
+          description: Заголовок задачи
+          type: string
+        description:
+          description: Описание задачи
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        categoryId:
+          type: number
+          description: ID категории
+          nullable: true
+          minimum: 1  
+        responsibleId:
+          description: ID ответственного
+          type: number
+          nullable: true
+          minimum: 1
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+        username:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+
+    CategoryWithTasks:
+      type: object
+      properties:
+        id:
+          type: number
+          description: ID категории
+        name:
+          type: string
+          description: Название категории
+        tasks:
+          type: array
+          description: Список задач, связанных с категорией
+          items:
+            $ref: '#/components/schemas/Task'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: number
+          description: ID категории
+        name:
+          type: string
+          description: Название категории
+
+    NewCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Название новой категории
+      required:
+        - name     
+
+    Limit:
+      type: integer
+      example: 10
+      description: Лимит
+      
+    Offset:
+      type: integer
+      example: 0
+      description: Оффсет    
